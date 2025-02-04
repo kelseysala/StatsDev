@@ -1,0 +1,83 @@
+html, body {
+  font-family: 'Tahoma', sans-serif;
+  font-size: 14px;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  background-color: black;
+  overflow: hidden;
+  color: lightgrey;
+  height: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.bg-image {
+  /* The image used */
+  background-image: url("Phoenix.png");
+
+  /* Add the blur effect */
+  filter: blur(8px);
+  -webkit-filter: blur(8px);
+
+  /* Full height */
+  height: 100%;
+
+  /* Center and scale the image nicely */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.bg-text {
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0, 0.4); /* Black w/opacity/see-through */
+  color: white;
+  font-weight: bold;
+  border: 3px solid #f1f1f1;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  width: 80%;
+  padding: 20px;
+  text-align: center;
+}
+
+button, select {
+  width: 100%;
+  font-weight: bold;
+}
+
+#mainMenu {
+  width: 100%;
+}
+
+#startMatchTbl, #updateStartingLineupTbl, #manageSetTbl, #rotationsTbl, #addSubPopupTbl, #addHomeStat {
+  width: 100%;
+}
+
+#opTeamTd, #subsTd, #homeStatTd, #statsSummaryTd {
+  width: 50%;
+}
+
+#homeScore, #awayScore {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 24px;
+}
+
+#subsHome, #subsAway, #timeoutsHome, #timeoutsAway, #currentServerLbl, #currentServer, #position1, #position2, #position3, #position4, #position5, #position6, #position1Name, #position2Name, #position3Name, #position4Name, #position5Name, #position6Name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 14px;
+}
+
+#position4, #position4Name, #position5, #position5Name {
+  border-right: 1px solid lightgrey;
+}
+
+#position1, #position1Name, #position2, #position2Name {
+  border-left: 1px solid lightgrey;
+}

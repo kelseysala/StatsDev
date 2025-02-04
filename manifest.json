@@ -1,0 +1,13 @@
+{
+    "name": "Phoenix Volleyball Stats Tracker",
+    "short_name": "PVST",
+    "start_url": "https://kelseysala.github.io/StatsDev/",
+    "display": "standalone",
+    "icons": [
+        {
+            "src": "Icon.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        }
+    ]
+}

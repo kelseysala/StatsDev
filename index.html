@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phoenix Volleyball Stats Tracker</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+  <link href='https://fonts.googleapis.com/css?family=Orbitron' rel='stylesheet' type='text/css'>
+</head>
+<body>
+  <div class="bg-image"></div>
+  <div class="bg-text">
+    <table id="mainMenu">
+      <tr><td><h2>Phoenix 16UG Stats Tracker Dev v1</h2></td></tr>
+      <tr><td><hr></td></tr>
+
+      <tr><td><button id="startMatch"      >Start a Match           </button></td></tr>
+      <tr><td><button id="browseMatches"   >Browse Completed Matches</button></td></tr>
+      <tr><td><button id="exportMatchStats">Export All Match Stats  </button></td></tr>
+      <tr><td><button id="checkForUpdates" >Check for Updates       </button></td></tr>
+    </table>
+
+    <table id="startMatchTbl" hidden>
+      <tr><td colspan="2"><h2>Start a Match</h2></td></tr>
+      <tr><td colspan="2"><hr></td></tr>
+      <tr><td><label for="awayTeamName">Opposition Team:</label></td><td><input id="awayTeamName" type="text"></td></tr>
+      <tr><td id="opTeamTd"><button id="goToMainMenu">Cancel</button></td><td><button id="submitOpTeamName">Next</button></td></tr>
+    </table>
+
+    <table id="updateStartingLineupTbl" hidden>
+      <tr><td colspan="2"><h2 id="lineupH2">Lineup for Set 1</h2></td></tr>
+      <tr><td colspan="2"><hr></td></tr>
+
+      <tr><td><label for="posName1">Position 1:</label></td><td><select id="posName1" name="posName1"><option value="Blank"></option></select></td></tr>
+      <tr><td><label for="posName2">Position 2:</label></td><td><select id="posName2" name="posName2"><option value="Blank"></option></select></td></tr>
+      <tr><td><label for="posName3">Position 3:</label></td><td><select id="posName3" name="posName3"><option value="Blank"></option></select></td></tr>
+      <tr><td><label for="posName4">Position 4:</label></td><td><select id="posName4" name="posName4"><option value="Blank"></option></select></td></tr>
+      <tr><td><label for="posName5">Position 5:</label></td><td><select id="posName5" name="posName5"><option value="Blank"></option></select></td></tr>
+      <tr><td><label for="posName6">Position 6:</label></td><td><select id="posName6" name="posName6"><option value="Blank"></option></select></td></tr>
+      <tr><td><label for="libName" >Lib Name:  </label></td><td><select id="libName"  name="libName" ><option value="Blank"></option></select></td></tr>
+
+      <tr><td><label for="firstServe">First serve:</label></td><td><select id="firstServe" name="firstServe"><option value="Blank"></option><option value="Home">Home</option><option value="Away">Away</option></select></td></tr>
+
+      <tr><td><button id="goToSetOpTeam">Back</button></td><td><button id="setStartingLineup">Next</button></td></tr>
+      <tr id="trEndMatch" hidden><td colspan="2"><button id="endMatch">End Match</button></td></tr>
+    </table>
+
+    <table id="manageSetTbl" hidden>
+      <tr><td><div id="homeScore">Home: 0</div></td><td><div id="awayScore">Away: 0</div></td></tr>
+
+      <tr><td><button id="addPointFor"   >Add Point For   </button></td><td><button id="addPointAgainst"  >Add Point Against  </button></td></tr>
+      <tr><td><button id="addStat"       >Add Statistic   </button></td><td><button id="toggleServer"     >Toggle Server      </button></td></tr>
+      <tr><td><button id="addTimeoutHome">Timeout Home    </button></td><td><button id="addTimeoutAway"   >Timeout Away       </button></td></tr>
+      <tr><td><button id="addSub"        >Add Substitution</button></td><td><button id="endSet"           >End Set            </button></td></tr>
+      <tr><td><button id="minusPointFor" >Minus Point For </button></td><td><button id="minusPointAgainst">Minus Point Against</button></td></tr>
+
+      <tr><td colspan="2"><hr></td></tr>
+      <tr><td><div id="currentServerLbl">Server:     </div></td><td><div id="currentServer">            </div></td></tr><tr><td colspan="2"><hr></td></tr>
+      <tr><td><div id="subsHome"        >Home Subs: 0</div></td><td><div id="subsAway"     >Away Subs: 0</div></td></tr><tr><td colspan="2"><hr></td></tr>
+      <tr><td><div id="timeoutsHome"    >Home TOs:  0</div></td><td><div id="timeoutsAway" >Away TOs:  0</div></td></tr><tr><td colspan="2"><hr></td></tr>
+    </table>
+
+    <table id="rotationsTbl" hidden>
+      <tr><td colspan="3"><hr></td></tr>
+      <tr><td><div id="position4"    >4</div></td><td><div id="position3"    >3</div></td><td><div id="position2"    >2</div></td></tr>
+      <tr><td><div id="position4Name"> </div></td><td><div id="position3Name"> </div></td><td><div id="position2Name"> </div></td></tr>
+      <tr><td colspan="3"><hr></td></tr>
+      <tr><td><div id="position5"    >5</div></td><td><div id="position6"    >6</div></td><td><div id="position1"    >1</div></td></tr>
+      <tr><td><div id="position5Name"> </div></td><td><div id="position6Name"> </div></td><td><div id="position1Name"> </div></td></tr>
+      <tr><td colspan="3"><hr></td></tr>
+    </table>
+
+    <table id="addSubPopupTbl" hidden>
+      <tr><td colspan="2"><h2>Substitutions</h2></td></tr>
+      <tr><td id="subsTd"><hr></td><td><hr></td></tr>
+      <tr><td colspan="2"><button id="addAwaySub">Add Away Sub</button></td></tr>
+      <tr><td colspan="2"><hr></td></tr>
+
+      <tr><td><select id="homeSub1" name="sub1"><option value="Blank"></option></select></td><td><button id="addHomeSub1">Sub position 1</button></td></tr>
+      <tr><td><select id="homeSub2" name="sub2"><option value="Blank"></option></select></td><td><button id="addHomeSub2">Sub position 2</button></td></tr>
+      <tr><td><select id="homeSub3" name="sub3"><option value="Blank"></option></select></td><td><button id="addHomeSub3">Sub position 3</button></td></tr>
+      <tr><td><select id="homeSub4" name="sub4"><option value="Blank"></option></select></td><td><button id="addHomeSub4">Sub position 4</button></td></tr>
+      <tr><td><select id="homeSub5" name="sub5"><option value="Blank"></option></select></td><td><button id="addHomeSub5">Sub position 5</button></td></tr>
+      <tr><td><select id="homeSub6" name="sub6"><option value="Blank"></option></select></td><td><button id="addHomeSub6">Sub position 6</button></td></tr>
+    </table>
+
+    <table id="addHomeStat" hidden>
+      <tr><td colspan="2"><h2>Add Statistic</h2></td></tr>
+      <tr><td><hr></td><td><hr></td></tr>
+      <tr><td id="homeStatTd"><label for="statPlayer">Select player:</label></td><td><select id="statPlayer" name="statPlayer"><option value="Blank"></option></select></td></tr>
+      <tr>
+        <td><label for="statType">Select stat:</label></td>
+        <td>
+          <select id="statType" name="statType">
+            <option value="Blank"></option>
+            <option value="serveReceive3">Serve Receive 3      </option>
+            <option value="serveReceive2">Serve Receive 2      </option>
+            <option value="serveReceive1">Serve Receive 1      </option>
+            <option value="serveReceive1">Serve Receive Shanked</option>
+            <option value="attackKill"   >Attack was a Kill    </option>
+            <option value="attackDug"    >Attack was Dug       </option>
+            <option value="attackBlocked">Attack was Blocked   </option>
+            <option value="attackMiss"   >Attack went Out      </option>
+            <option value="pass3"        >Pass 3               </option>
+            <option value="pass2"        >Pass 2               </option>
+            <option value="pass1"        >Pass 1               </option>
+            <option value="shank"        >Pass Shanked         </option>
+            <option value="serviceAce"   >Service Ace          </option>
+            <option value="serviceIn"    >Service In           </option>
+            <option value="serviceOut"   >Service Out          </option>
+            <option value="serviceLine"  >Service Error - Line </option>
+          </select>
+        </td>
+      </tr>
+      <tr><td><button id="backoutStat">Back</button></td><td><button id="submitStat">Submit Stat</button></td></tr>
+    </table>
+
+    <table id="statsSummary" hidden>
+      <tr><td colspan="2"><h2>Team Stats Summary</h2></td></tr>
+      <tr><td id="statsSummaryTd"><hr></td><td><hr></td></tr>
+
+      <tr><td>Sets Won             </td><td id="setsWon">             </td></tr>
+      <tr><td>Sets Lost            </td><td id="setsLost">            </td></tr>
+      <tr><td>Sets Tied            </td><td id="setsTied">            </td></tr>
+      <tr><td>Serve Receive 3      </td><td id="serveReceive3">       </td></tr>
+      <tr><td>Serve Receive 2      </td><td id="serveReceive2">       </td></tr>
+      <tr><td>Serve Receive 1      </td><td id="serveReceive1">       </td></tr>
+      <tr><td>Serve Receive Shanked</td><td id="serveReceiveShanked"> </td></tr>
+      <tr><td>Attack was a Kill    </td><td id="attackKill">          </td></tr>
+      <tr><td>Attack was Dug       </td><td id="attackDug">           </td></tr>
+      <tr><td>Attack was Blocked   </td><td id="attackBlocked">       </td></tr>
+      <tr><td>Attack went Out      </td><td id="attackMiss">          </td></tr>
+      <tr><td>Pass 3               </td><td id="pass3">               </td></tr>
+      <tr><td>Pass 2               </td><td id="pass2">               </td></tr>
+      <tr><td>Pass 1               </td><td id="pass1">               </td></tr>
+      <tr><td>Pass Shanked         </td><td id="shank">               </td></tr>
+      <tr><td>Service Ace          </td><td id="serviceAce">          </td></tr>
+      <tr><td>Service In           </td><td id="serviceIn">           </td></tr>
+      <tr><td>Service Out          </td><td id="serviceOut">          </td></tr>
+      <tr><td>Service Error - Line </td><td id="serviceLine">         </td></tr>
+
+      <tr><td colspan="2"><button id="dismissStats">Back</button></td></tr>
+    </table>
+  </div>
+  <script src="app.js"></script>
+
+</body>
+</html>
