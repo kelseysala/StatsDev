@@ -7,7 +7,7 @@ html, body {
   background-color: black;
   color: lightgrey;
   height: 100%;
-  touch-action: pan-y;
+  overscroll-behavior: none;
 }
 
 * {
