@@ -45,6 +45,8 @@ html, body {
   width: 95%;
   padding: 5px;
   text-align: center;
+  height: 95%;
+  overflow-y: scroll;
 }
 
 button, select, input {
