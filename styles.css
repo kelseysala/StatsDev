@@ -50,6 +50,7 @@ html, body {
 button, select, input {
   width: 100%;
   font-weight: bold;
+  height: 40px;
 }
 
 #mainMenu {
