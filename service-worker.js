@@ -19,4 +19,4 @@ self.addEventListener('fetch', (event) => {
             return response || fetch(event.request);
         })
     );
-}); // v2
+}); // v3

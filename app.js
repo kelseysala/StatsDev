@@ -1,7 +1,8 @@
 "use strict";
 
 /*
-Author: Kelsey Sala
+AUTHOR: Kelsey Sala
+
 DONE:
 - Ability to create matches
 - Choose between Phoenix 14UG vs 15UG vs 16UG vs 18UB
@@ -9,12 +10,13 @@ DONE:
 - Ability to track set specific statistics like timeouts, substitutions, offensive/defensive stats, etc.
 - View of current rotation positions by player
 - Summary of team statistics at the end of a match
+- Ability to undo
+
 TODO:
 - Summarize individual match stats
 - Summarize individual and team stats across matches
-- Add an undo function - every thing should be a vbStat object, type=homeSub/awaySub/homeTO/awayTo/pointFor/pointAgainst/libIn/LibOut/etc.
 - Implement a shared back-end so you can synchronize saved matches back to a central server so data isn't siloed on a single device
-- Likely going to remove Toggle Server, and Minus Points buttons with an Undo button
+- Add a player to a roster in the event someone gets called up from lower age team
 */
 
 let vbMatch;
@@ -22,6 +24,9 @@ let vbSet;
 let vbSetCount = 1;
 let vbStats = [];
 let activeRoster;
+let matchStarted;
+let homeTeam;
+let awayTeam;
 
 const roster13UG = [ "Azaleiah", "Blerta", "Francesca", "Hannah", "Jasmine", "Madelyn", "Makayla", "Maryam", "Meleigha", "Paytin", "Rea", "Rowan", "Sarah", "Shirley" ];
 const roster14UG = [ "Alina", "Arianna Salamatin", "Arianna Bailey", "Ashley", "Ava", "Evelyn", "Gabby", "Halle", "Halo", "Izabella", "Jessica", "Penny", "Rylee" ];
@@ -85,8 +90,51 @@ function initializeSubComboBoxes() {
   document.getElementById('homeSub6').innerHTML = getRosterComboBoxOptions();
 }
 
+function getRotationPositions() {
+  let rotationArr = [];
+  rotationArr.push(document.getElementById('position1Name').innerHTML);
+  rotationArr.push(document.getElementById('position2Name').innerHTML);
+  rotationArr.push(document.getElementById('position3Name').innerHTML);
+  rotationArr.push(document.getElementById('position4Name').innerHTML);
+  rotationArr.push(document.getElementById('position5Name').innerHTML);
+  rotationArr.push(document.getElementById('position6Name').innerHTML);
+  return rotationArr;
+}
+
+function setRotationPositions(rotationArr) {
+  document.getElementById('position6Name').innerHTML = rotationArr.pop();
+  document.getElementById('position5Name').innerHTML = rotationArr.pop();
+  document.getElementById('position4Name').innerHTML = rotationArr.pop();
+  document.getElementById('position3Name').innerHTML = rotationArr.pop();
+  document.getElementById('position2Name').innerHTML = rotationArr.pop();
+  document.getElementById('position1Name').innerHTML = rotationArr.pop();
+}
+
+function getStateForStat(statName, statPlayer) {
+  let vbStat = new Object();
+  vbStat.matchStart   = matchStarted;
+  vbStat.homeTeam     = homeTeam;
+  vbStat.awayTeam     = awayTeam;
+  vbStat.setNumber    = vbSetCount;
+  vbStat.servingTeam  = getCurrentServer();
+  vbStat.homeTimeouts = getHomeTimeouts();
+  vbStat.awayTimeouts = getAwayTimeouts();
+  vbStat.homeSubs     = getHomeSubs();
+  vbStat.awaySubs     = getAwaySubs();
+  vbStat.rotations    = getRotationPositions();
+  vbStat.homeScore    = getHomeScore();
+  vbStat.awayScore    = getAwayScore();
+  vbStat.statType     = statName;
+  vbStat.statPlayer   = statPlayer;
+  console.log("stat submitted: '" + JSON.stringify(vbStat) + "'\n");
+  // add capture of match start date, set number, serving-team, timeout counts, sub counts, and player rotations
+  return vbStat;
+}
+
 function addHomeSub(positionNum, playerName) {
   setHomeSubs(getHomeSubs() + 1);
+
+  vbStats.push(getStateForStat("addHomeSub", ""));
 
   document.getElementById('addSubPopupTbl').hidden = true;
 
@@ -126,9 +174,53 @@ function getCurrentServer() {
   return document.getElementById('currentServer').innerHTML;
 }
 
+function setServingTeam(servingTeam) {
+  document.getElementById('currentServer').innerHTML = servingTeam;
+}
+
 function setCurrentServer(servingTeam) {
   document.getElementById('currentServer').innerHTML = servingTeam;
 }
+
+document.getElementById('undoLastAction').addEventListener('click', () => {
+  let lastStat = vbStats.pop();
+  if (lastStat.statType === "setStarted") {
+    console.log("nothing to undo - set is in initial state");
+    vbStats.push(lastStat);
+  } else {
+    console.log("update UI to reflect state before last action wrt score, serving-team, timeouts, subs, and player rotation");
+    if (lastStat.statType === "addTimeoutAway") {
+      setAwayTimeouts(getAwayTimeouts() - 1);
+    }
+    if (lastStat.statType === "addTimeoutHome") {
+      setHomeTimeouts(getHomeTimeouts() - 1);
+    }
+    if (lastStat.statType === "addAwaySub") {
+      setAwaySubs(getAwaySubs() - 1);
+    }
+    if (lastStat.statType === "addHomeSub") {
+      setHomeSubs(getHomeSubs() - 1);
+
+      let priorStat = vbStats.pop();
+      setRotationPositions(priorStat.rotations.slice());
+      vbStats.push(priorStat);
+    }
+    if (lastStat.statType === "addPointFor") {
+      setHomeScore(getHomeScore() - 1);
+
+      let priorStat = vbStats.pop();
+      setRotationPositions(priorStat.rotations.slice());
+      setServingTeam(priorStat.servingTeam);
+      vbStats.push(priorStat);
+    }
+    if (lastStat.statType === "addPointAgainst") {
+      setAwayScore(getAwayScore() - 1);
+      let priorStat = vbStats.pop();
+      setServingTeam(priorStat.servingTeam);
+      vbStats.push(priorStat);
+    }
+  }
+});
 
 document.getElementById('addStat').addEventListener('click', () => {
   document.getElementById('manageSetTbl').hidden = true;
@@ -150,14 +242,7 @@ document.getElementById('backoutStat').addEventListener('click', () => {
 });
 
 document.getElementById('submitStat').addEventListener('click', () => {
-  const vbStat = new Object();
-  vbStat.statPlayer = document.getElementById('statPlayer').value;
-  vbStat.statType   = document.getElementById(  'statType').value;
-  vbStat.homeScore  = getHomeScore();
-  vbStat.awayScore  = getAwayScore();
-  vbStats.push(vbStat);
-
-  console.log("stat submitted: '" + vbStat.statPlayer + "' - '" + vbStat.statType + "' - '" + vbStats.length + "' - homeScore: '" + vbStat.homeScore + "' - awayScore: '" + vbStat.awayScore + "'");
+  vbStats.push(getStateForStat(document.getElementById('statType').value, document.getElementById('statPlayer').value));
 
   document.getElementById('statPlayer').value = "Blank";
   document.getElementById(  'statType').value = "Blank";
@@ -178,6 +263,8 @@ document.getElementById('addSub').addEventListener('click', () => {
 
 document.getElementById('addAwaySub').addEventListener('click', () => {
   setAwaySubs(getAwaySubs() + 1);
+
+  vbStats.push(getStateForStat("addAwaySub", ""));
 
   document.getElementById('addSubPopupTbl').hidden = true;
 
@@ -253,10 +340,14 @@ document.getElementById('addHomeSub6').addEventListener('click', () => {
 
 document.getElementById('addTimeoutHome').addEventListener('click', () => {
   setHomeTimeouts(getHomeTimeouts() + 1);
+
+  vbStats.push(getStateForStat("addTimeoutHome", ""));
 });
 
 document.getElementById('addTimeoutAway').addEventListener('click', () => {
   setAwayTimeouts(getAwayTimeouts() + 1);
+
+  vbStats.push(getStateForStat("addTimeoutAway", ""));
 });
 
 document.getElementById('startMatch').addEventListener('click', () => {
@@ -269,11 +360,6 @@ document.getElementById('startMatch').addEventListener('click', () => {
 });
 
 document.getElementById('browseMatches').addEventListener('click', () => {
-  // TBD
-  alert("This feature is not yet implemented. Stay tuned.");
-});
-
-document.getElementById('exportMatchStats').addEventListener('click', () => {
   // TBD
   alert("This feature is not yet implemented. Stay tuned.");
 });
@@ -332,6 +418,14 @@ document.getElementById('setStartingLineup').addEventListener('click', () => {
   document.getElementById('position5Name').innerHTML = document.getElementById('posName5').value;
   document.getElementById('position6Name').innerHTML = document.getElementById('posName6').value;
 
+  if (vbSetCount == 1) {
+    matchStarted = (new Date()).toISOString();
+    homeTeam = document.getElementById("homeRoster").value;
+    awayTeam = document.getElementById("awayTeamName").value;
+    vbStats.push(getStateForStat("matchStarted", ""));
+  }
+  vbStats.push(getStateForStat("setStarted", ""));
+
   document.getElementById('updateStartingLineupTbl').hidden = true;
   document.getElementById(           'manageSetTbl').hidden = false;
   document.getElementById(           'rotationsTbl').hidden = false;
@@ -351,6 +445,8 @@ document.getElementById('addPointFor').addEventListener('click', () => {
     document.getElementById('position5Name').innerHTML = document.getElementById('position6Name').innerHTML;
     document.getElementById('position6Name').innerHTML = tmpPosition1;
   }
+
+  vbStats.push(getStateForStat("addPointFor", ""));
 });
 
 document.getElementById('addPointAgainst').addEventListener('click', () => {
@@ -359,53 +455,23 @@ document.getElementById('addPointAgainst').addEventListener('click', () => {
   if (getCurrentServer() === "Home") {
     setCurrentServer("Away");
   }
-});
 
-document.getElementById('minusPointFor').addEventListener('click', () => {
-  let homeScore = getHomeScore();
-  if (homeScore > 0) {
-    setHomeScore(homeScore - 1);
-  }
-});
-
-document.getElementById('minusPointAgainst').addEventListener('click', () => {
-  let awayScore = getAwayScore();
-  if (awayScore > 0) {
-    setAwayScore(awayScore - 1);
-  }
-});
-
-document.getElementById('toggleServer').addEventListener('click', () => {
-  if (getCurrentServer() === "Home") {
-    setCurrentServer("Away");
-  } else {
-    setCurrentServer("Home");
-  }
+  vbStats.push(getStateForStat("addPointAgainst", ""));
 });
 
 document.getElementById('endSet').addEventListener('click', () => {
   let homeScore = getHomeScore();
   let awayScore = getAwayScore();
 
-  let vbStat = new Object();
-
-  vbStat.statPlayer = "";
-
   if (homeScore == awayScore) {
-    vbStat.statType = "setsTied";
+    vbStats.push(getStateForStat("setsTied", ""));
   } else {
     if (homeScore > awayScore) {
-      vbStat.statType = "setsWon";
+      vbStats.push(getStateForStat("setsWon", ""));
     } else {
-      vbStat.statType = "setsLost";
+      vbStats.push(getStateForStat("setsLost", ""));
     }
   }
-  vbStat.homeScore = getHomeScore();
-  vbStat.awayScore = getAwayScore();
-
-  vbStats.push(vbStat);
-
-  console.log("stat submitted: '" + vbStat.statPlayer + "' - '" + vbStat.statType + "' - '" + vbStats.length + "' - homeScore: '" + vbStat.homeScore + "' - awayScore: '" + vbStat.awayScore + "'");
 
   initializeLineUp();
 
@@ -436,6 +502,8 @@ document.getElementById('dismissStats').addEventListener('click', () => {
 });
 
 document.getElementById('endMatch').addEventListener('click', () => {
+  vbStats.push(getStateForStat("endMatch", ""));
+
   setHomeScore(0);
   setAwayScore(0);
 
@@ -541,6 +609,66 @@ document.getElementById('endMatch').addEventListener('click', () => {
   document.getElementById(             'trEndMatch').hidden = true;
   document.getElementById('updateStartingLineupTbl').hidden = true;
   document.getElementById(        'statsSummaryTbl').hidden = false;
+});
+
+document.getElementById('exportMatchStats').addEventListener('click', () => { // text/csv
+  var filename = "match_stats.csv";
+  var dateNow  = new Date();
+  var vbAllStats = [];
+  var tmpStat = new Object();
+  tmpStat.matchStart = dateNow.toISOString();
+  tmpStat.homeTeam   = "Phoenix 16UG";
+  tmpStat.awayTeam   = "Taika";
+  tmpStat.setNumber  = 1;
+  tmpStat.playerName = "Gabby";
+  tmpStat.statType   = "Pass3";
+  tmpStat.homeScore  = 0;
+  tmpStat.awayScore  = 0;
+  vbAllStats.push(tmpStat);
+
+  tmpStat = new Object();
+  tmpStat.matchStart = dateNow.toISOString();
+  tmpStat.homeTeam   = "Phoenix 16UG";
+  tmpStat.awayTeam   = "Taika";
+  tmpStat.setNumber  = 1;
+  tmpStat.playerName = "Piper";
+  tmpStat.statType   = "attackKill";
+  tmpStat.homeScore  = 0;
+  tmpStat.awayScore  = 0;
+  vbAllStats.push(tmpStat);
+
+  tmpStat = new Object();
+  tmpStat.matchStart = dateNow.toISOString();
+  tmpStat.homeTeam   = "Phoenix 16UG";
+  tmpStat.awayTeam   = "Taika";
+  tmpStat.setNumber  = 2;
+  tmpStat.playerName = "Laurel";
+  tmpStat.statType   = "attackDug";
+  tmpStat.homeScore  = 0;
+  tmpStat.awayScore  = 0;
+  vbAllStats.push(tmpStat);
+
+  var csvString = "Match Start Date,Home Team,Away Team,Set,Player Name,Home Score,Away Score,Stat Type\n";
+  for (var n = 0; n < vbAllStats.length; n++) {
+    csvString += vbAllStats[n].matchStart + "," + vbAllStats[n].homeTeam + "," + vbAllStats[n].awayTeam + "," + vbAllStats[n].setNumber + "," + vbAllStats[n].playerName + "," + vbAllStats[n].homeScore + "," + vbAllStats[n].awayScore  + "," + vbAllStats[n].statType + "\n";
+  }
+  
+  var blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+  if (navigator.msSaveBlob) { // IE 10+
+    navigator.msSaveBlob(blob, filename);
+  } else {
+    var link = document.createElement("a");
+    if (link.download !== undefined) { // feature detection
+      // Browsers that support HTML5 download attribute
+      var url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
 });
 
 if ('serviceWorker' in navigator) {

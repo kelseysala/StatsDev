@@ -63,6 +63,10 @@ button, select, input {
   width: 100%;
 }
 
+td {
+  padding-bottom: 0.5em;
+}
+
 #opTeamTd, #subsTd, #homeStatTd, #statsSummaryTd, #lineupTd, #manageSetTd {
   width: 50%;
 }
