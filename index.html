@@ -7,6 +7,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
   <link href='https://fonts.googleapis.com/css?family=Orbitron' rel='stylesheet' type='text/css'>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 </head>
 <body>
   <div class="bg-image"></div>
@@ -19,19 +20,19 @@
       <tr><td><button id="browseMatches"   >Browse Completed Matches</button></td></tr>
       <tr><td><button id="exportMatchStats">Export All Match Stats  </button></td></tr>
       <tr><td><button id="checkForUpdates" >Check for Updates       </button></td></tr>
-      <tr><td><button id="checkForWebAuth" >Check for WebAuthN      </button></td></tr>
     </table>
 
     <table id="startMatchTbl" hidden>
       <tr><td colspan="2"><h2>Start a Match</h2></td></tr>
       <tr><td colspan="2"><hr></td></tr>
       <tr><td><label for="awayTeamName">Opposition Team:</label></td><td><input id="awayTeamName" type="text"></td></tr>
+      <tr><td><label for="homeRoster">Select Roster:</label></td><td><select id="homeRoster" name="homeRoster"><option value="Blank"></option><option value="13UG">13U Girls</option><option value="14UG">14U Girls</option><option value="15UG">15U Girls</option><option value="16UG">16U Girls</option><option value="18UB">18U Boys</option></select></td></tr>
       <tr><td id="opTeamTd"><button id="goToMainMenu">Cancel</button></td><td><button id="submitOpTeamName">Next</button></td></tr>
     </table>
 
     <table id="updateStartingLineupTbl" hidden>
       <tr><td colspan="2"><h2 id="lineupH2">Lineup for Set 1</h2></td></tr>
-      <tr><td colspan="2"><hr></td></tr>
+      <tr><td id="lineupTd"><hr></td><td><hr></td></tr>
 
       <tr><td><label for="posName1">Position 1:</label></td><td><select id="posName1" name="posName1"><option value="Blank"></option></select></td></tr>
       <tr><td><label for="posName2">Position 2:</label></td><td><select id="posName2" name="posName2"><option value="Blank"></option></select></td></tr>
@@ -48,7 +49,7 @@
     </table>
 
     <table id="manageSetTbl" hidden>
-      <tr><td><div id="homeScore">Home: 0</div></td><td><div id="awayScore">Away: 0</div></td></tr>
+      <tr><td id="manageSetTd"><div id="homeScore">Home: 0</div></td><td><div id="awayScore">Away: 0</div></td></tr>
 
       <tr><td><button id="addPointFor"   >Add Point For   </button></td><td><button id="addPointAgainst"  >Add Point Against  </button></td></tr>
       <tr><td><button id="addStat"       >Add Statistic   </button></td><td><button id="toggleServer"     >Toggle Server      </button></td></tr>
@@ -63,13 +64,13 @@
     </table>
 
     <table id="rotationsTbl" hidden>
-      <tr><td colspan="3"><hr></td></tr>
+      <tr><td id="rotationsTd1"><hr></td><td id="rotationsTd2"><hr></td><td><hr></td></tr>
       <tr><td><div id="position4"    >4</div></td><td><div id="position3"    >3</div></td><td><div id="position2"    >2</div></td></tr>
       <tr><td><div id="position4Name"> </div></td><td><div id="position3Name"> </div></td><td><div id="position2Name"> </div></td></tr>
       <tr><td colspan="3"><hr></td></tr>
       <tr><td><div id="position5"    >5</div></td><td><div id="position6"    >6</div></td><td><div id="position1"    >1</div></td></tr>
       <tr><td><div id="position5Name"> </div></td><td><div id="position6Name"> </div></td><td><div id="position1Name"> </div></td></tr>
-      <tr><td colspan="3"><hr></td></tr>
+      <tr><td><hr></td><td><hr></td><td><hr></td></tr>
     </table>
 
     <table id="addSubPopupTbl" hidden>
@@ -86,7 +87,7 @@
       <tr><td><select id="homeSub6" name="sub6"><option value="Blank"></option></select></td><td><button id="addHomeSub6">Sub position 6</button></td></tr>
     </table>
 
-    <table id="addHomeStat" hidden>
+    <table id="addHomeStatTbl" hidden>
       <tr><td colspan="2"><h2>Add Statistic</h2></td></tr>
       <tr><td><hr></td><td><hr></td></tr>
       <tr><td id="homeStatTd"><label for="statPlayer">Select player:</label></td><td><select id="statPlayer" name="statPlayer"><option value="Blank"></option></select></td></tr>
@@ -117,7 +118,7 @@
       <tr><td><button id="backoutStat">Back</button></td><td><button id="submitStat">Submit Stat</button></td></tr>
     </table>
 
-    <table id="statsSummary" hidden>
+    <table id="statsSummaryTbl" hidden>
       <tr><td colspan="2"><h2>Team Stats Summary</h2></td></tr>
       <tr><td id="statsSummaryTd"><hr></td><td><hr></td></tr>
 
@@ -140,7 +141,26 @@
       <tr><td>Service In           </td><td id="serviceIn">           </td></tr>
       <tr><td>Service Out          </td><td id="serviceOut">          </td></tr>
       <tr><td>Service Error - Line </td><td id="serviceLine">         </td></tr>
-
+      <tr>
+        <td colspan="2">
+          <canvas id="attackChart" style="width:100%;"></canvas>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <canvas id="passingChart" style="width:100%;"></canvas>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <canvas id="servingChart" style="width:100%;"></canvas>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <canvas id="receivingChart" style="width:100%;"></canvas>
+        </td>
+      </tr>
       <tr><td colspan="2"><button id="dismissStats">Back</button></td></tr>
     </table>
   </div>

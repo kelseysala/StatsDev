@@ -42,12 +42,13 @@ html, body {
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 2;
-  width: 80%;
-  padding: 20px;
+  width: 95%;
+  padding: 5px;
   text-align: center;
+  overflow-y: auto;
 }
 
-button, select {
+button, select, input {
   width: 100%;
   font-weight: bold;
 }
@@ -56,12 +57,16 @@ button, select {
   width: 100%;
 }
 
-#startMatchTbl, #updateStartingLineupTbl, #manageSetTbl, #rotationsTbl, #addSubPopupTbl, #addHomeStat {
+#startMatchTbl, #updateStartingLineupTbl, #manageSetTbl, #rotationsTbl, #addSubPopupTbl, #addHomeStatTbl, #statsSummaryTbl {
   width: 100%;
 }
 
-#opTeamTd, #subsTd, #homeStatTd, #statsSummaryTd {
+#opTeamTd, #subsTd, #homeStatTd, #statsSummaryTd, #lineupTd, #manageSetTd {
   width: 50%;
+}
+
+#rotationsTd1, #rotationsTd2 {
+  width: 33%;
 }
 
 #homeScore, #awayScore {
