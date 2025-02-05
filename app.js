@@ -448,12 +448,12 @@ document.getElementById('endMatch').addEventListener('click', () => {
   vbSetCount = 1;
 
   document.getElementById('lineupH2').innerHTML = "Lineup for Set " + vbSetCount;
-
+/*
   let statTypes = [ 'setsWon', 'setsLost', 'setsTied', 'serveReceive3', 'serveReceive2', 'serveReceive1', 'serveReceiveShanked', 'attackKill', 'attackDug', 'attackBlocked', 'attackMiss', 'pass3', 'pass2', 'pass1', 'shank', 'serviceAce', 'serviceIn', 'serviceOut', 'serviceLine' ];
   for (let x = 0; x < statTypes.length; x++) {
     document.getElementById(statTypes[x]).innerHTML = getTeamStatSummary(statTypes[x]);
   }
-
+*/
   var xAttackValues   = [ "Kill Shots", "Dug Up", "Blocked", "Hit Out" ];
   var yAttackValues   = [ getTeamStatSummary('attackKill'), getTeamStatSummary('attackDug'), getTeamStatSummary('attackBlocked'), getTeamStatSummary('attackMiss') ];
   var attackBarColors = [ "red", "green","blue","orange" ];
