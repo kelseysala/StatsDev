@@ -13,7 +13,7 @@
   <div class="bg-image"></div>
   <div class="bg-text">
     <table id="mainMenu">
-      <tr><td><h2>Phoenix Stats Tracker v2</h2></td></tr>
+      <tr><td><h2>Phoenix Stats Tracker v3</h2></td></tr>
       <tr><td><hr></td></tr>
 
       <tr><td><button id="startMatch"      >Start a Match           </button></td></tr>
@@ -164,7 +164,45 @@
       </tr>
       <tr><td colspan="2"><button id="dismissStats">Back</button></td></tr>
     </table>
+
+    <table id='matchList' hidden>
+      <tr><td colspan='4'><h2>Completed Matches</h2></td></tr>
+      <tr><td id='matchListTd1'><hr></td><td id='matchListTd2'><hr></td><td id='matchListTd3'><hr></td><td id='matchListTd4'><hr></td></tr>
+      <tr><td>Date</td><td>Home</td><td>Away</td><td>Stats</td>
+    </table>
+
+    <table id="viewMatchDetailsTbl" hidden>
+      <tr><td colspan="2"><h2 id="viewMatchDetailsHeader"></h2></g2></td></tr>
+      <tr><td id="matchDetailsTd"><hr></td><td><hr></td></tr>
+      <tr><td>Sets Won </td><td id="viewSetsWon"></td></tr>
+      <tr><td>Sets Lost</td><td id="viewSetsLost"></td></tr>
+      <tr><td>Sets Tied</td><td id="viewSetsTied"></td></tr>
+
+      <tr>
+        <td colspan="2">
+          <canvas id="attackChart2" style="width:100%;"></canvas>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <canvas id="passingChart2" style="width:100%;"></canvas>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <canvas id="servingChart2" style="width:100%;"></canvas>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <canvas id="receivingChart2" style="width:100%;"></canvas>
+        </td>
+      </tr>
+
+      <tr><td><button id="dismissMatchDetails">Back</button></td><td><button id="exportToCSV">Export to CSV</button></td></tr>
+    </table>
   </div>
+
   <script src="app.js"></script>
 
 </body>

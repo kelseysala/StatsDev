@@ -112,20 +112,23 @@ function setRotationPositions(rotationArr) {
 
 function getStateForStat(statName, statPlayer) {
   let vbStat = new Object();
-  vbStat.matchStart   = matchStarted;
-  vbStat.homeTeam     = homeTeam;
-  vbStat.awayTeam     = awayTeam;
-  vbStat.setNumber    = vbSetCount;
-  vbStat.servingTeam  = getCurrentServer();
-  vbStat.homeTimeouts = getHomeTimeouts();
-  vbStat.awayTimeouts = getAwayTimeouts();
-  vbStat.homeSubs     = getHomeSubs();
-  vbStat.awaySubs     = getAwaySubs();
-  vbStat.rotations    = getRotationPositions();
-  vbStat.homeScore    = getHomeScore();
-  vbStat.awayScore    = getAwayScore();
-  vbStat.statType     = statName;
-  vbStat.statPlayer   = statPlayer;
+
+  vbStat.matchStart    = matchStarted;
+  vbStat.homeTeam      = homeTeam;
+  vbStat.awayTeam      = awayTeam;
+  vbStat.setNumber     = vbSetCount;
+  vbStat.servingTeam   = getCurrentServer();
+  vbStat.homeTimeouts  = getHomeTimeouts();
+  vbStat.awayTimeouts  = getAwayTimeouts();
+  vbStat.homeSubs      = getHomeSubs();
+  vbStat.awaySubs      = getAwaySubs();
+  vbStat.rotations     = getRotationPositions();
+  vbStat.homeScore     = getHomeScore();
+  vbStat.awayScore     = getAwayScore();
+  vbStat.statTimestamp = (new Date()).toISOString();
+  vbStat.statType      = statName;
+  vbStat.statPlayer    = statPlayer;
+
   console.log("stat submitted: '" + JSON.stringify(vbStat) + "'\n");
   // add capture of match start date, set number, serving-team, timeout counts, sub counts, and player rotations
   return vbStat;
@@ -180,6 +183,136 @@ function setServingTeam(servingTeam) {
 
 function setCurrentServer(servingTeam) {
   document.getElementById('currentServer').innerHTML = servingTeam;
+}
+
+function formatDate(d) {
+  return (d.split('T'))[0];
+}
+
+function viewStats(k) {
+  const matchDetails = JSON.parse(localStorage.getItem(k));
+
+  let setsWon  = 0;
+  let setsLost = 0;
+  let setsTied = 0;
+
+  for (let i = 0; i < matchDetails.length; i++) {
+    if (matchDetails[i].statType === "setsWon") {
+      setsWon++;
+    }
+    if (matchDetails[i].statType === "setsLost") {
+      setsLost++;
+    }
+    if (matchDetails[i].statType === "setsTied") {
+      setsTied++;
+    }
+  }
+
+  // TODO: clean up the use of vbStats
+  vbStats = matchDetails;
+
+  let xAttackValues   = [ "Kill Shots", "Dug Up", "Blocked", "Hit Out" ];
+  let yAttackValues   = [ getTeamStatSummary('attackKill'), getTeamStatSummary('attackDug'), getTeamStatSummary('attackBlocked'), getTeamStatSummary('attackMiss') ];
+  let attackBarColors = [ "red", "green","blue","orange" ];
+
+  new Chart("attackChart2", {
+    type: "pie",
+    data: {
+      labels: xAttackValues,
+      datasets: [{
+        backgroundColor: attackBarColors,
+        data: yAttackValues
+      }]
+    },
+    options: {
+      title: {
+        display: true,
+        text: "Attack Stats"
+      }
+    }
+  });
+
+  let xPassingValues   = [ '3-Pass', '2-Pass', '1-Pass', 'Shank' ];
+  let yPassingValues   = [ getTeamStatSummary('pass3'), getTeamStatSummary('pass2'), getTeamStatSummary('pass1'), getTeamStatSummary('shank') ];
+  let passingBarColors = [ "red", "green","blue","orange" ];
+
+  new Chart("passingChart2", {
+    type: "pie",
+    data: {
+      labels: xPassingValues,
+      datasets: [{
+        backgroundColor: passingBarColors,
+        data: yPassingValues
+      }]
+    },
+    options: {
+      title: {
+        display: true,
+        text: "Passing Stats"
+      }
+    }
+  });
+
+  let xServingValues   = [ 'Ace', 'Served In', 'Served Out', 'Line Violation' ];
+  let yServingValues   = [ getTeamStatSummary('serviceAce'), getTeamStatSummary('serviceIn'), getTeamStatSummary('serviceOut'), getTeamStatSummary('serviceLine') ];
+  let servingBarColors = [ "red", "green","blue","orange" ];
+
+  new Chart("servingChart2", {
+    type: "pie",
+    data: {
+      labels: xServingValues,
+      datasets: [{
+        backgroundColor: servingBarColors,
+        data: yServingValues
+      }]
+    },
+    options: {
+      title: {
+        display: true,
+        text: "Serving Stats"
+      }
+    }
+  });
+
+  let xReceivingValues   = [ '3-Receive', '2-Receive', '1-Receive', 'Shank' ];
+  let yReceivingValues   = [ getTeamStatSummary('serveReceive3'), getTeamStatSummary('serveReceive2'), getTeamStatSummary('serveReceive1'), getTeamStatSummary('serveReceiveShanked') ];
+  let receivingBarColors = [ "red", "green","blue","orange" ];
+
+  new Chart("receivingChart2", {
+    type: "pie",
+    data: {
+      labels: xReceivingValues,
+      datasets: [{
+        backgroundColor: receivingBarColors,
+        data: yReceivingValues
+      }]
+    },
+    options: {
+      title: {
+        display: true,
+        text: "Serve-Receive Stats"
+      }
+    }
+  });
+
+  document.getElementById('viewMatchDetailsHeader').innerHTML = formatDate(matchDetails[0].matchStart) + " - " + matchDetails[0].homeTeam + " vs " + matchDetails[0].awayTeam;
+
+  document.getElementById( 'viewSetsWon').innerHTML = setsWon;
+  document.getElementById('viewSetsLost').innerHTML = setsLost;
+  document.getElementById('viewSetsTied').innerHTML = setsTied;
+
+  document.getElementById(          'matchList').hidden = true;
+  document.getElementById('viewMatchDetailsTbl').hidden = false;
+}
+
+document.getElementById('dismissMatchDetails').addEventListener('click', () => {
+  document.getElementById('viewMatchDetailsTbl').hidden = true;
+  document.getElementById(          'matchList').hidden = false;
+});
+
+function dismissBrowseMatches() {
+  document.getElementById('matchList').hidden = true;
+  document.getElementById('mainMenu').hidden = false;
 }
 
 document.getElementById('undoLastAction').addEventListener('click', () => {
@@ -359,14 +492,28 @@ document.getElementById('startMatch').addEventListener('click', () => {
   document.getElementById('homeRoster').value = "Blank";
 });
 
+let matchListTemplate = "";
 document.getElementById('browseMatches').addEventListener('click', () => {
-  // TBD
-  alert("This feature is not yet implemented. Stay tuned.");
+  if (matchListTemplate === "") {
+    matchListTemplate = document.getElementById('matchList').innerHTML;
+  }
+  let matchListHtml = matchListTemplate;
+  for (let w = 0; w < localStorage.length; w++) {
+    const matchStats = JSON.parse(localStorage.getItem(localStorage.key(w)));
+    matchListHtml += "<tr><td>" + formatDate(matchStats[0].matchStart) + "</td><td>" + matchStats[0].homeTeam + "</td><td>" + matchStats[0].awayTeam + "</td><td><button onclick=\"viewStats('" + localStorage.key(w) + "')\">View</button></td></tr>";
+  }
+  matchListHtml += "<tr><td colspan='4'><button onclick='dismissBrowseMatches()'>Back</button></td></tr></table>";
+
+  document.getElementById('mainMenu').hidden = true;
+
+  document.getElementById('matchList').innerHTML = matchListHtml;
+
+  document.getElementById('matchList').hidden = false;
+  // hide main menu
 });
 
 document.getElementById('checkForUpdates').addEventListener('click', () => {
-  // TBD
-  alert("This feature is not yet implemented. Stay tuned.");
+  caches.delete('content-cache');
 });
 
 document.getElementById('goToMainMenu').addEventListener('click', () => {
@@ -503,6 +650,8 @@ document.getElementById('dismissStats').addEventListener('click', () => {
 
 document.getElementById('endMatch').addEventListener('click', () => {
   vbStats.push(getStateForStat("endMatch", ""));
+  // save copy of vbStats array values to localStorage.
+  window.localStorage.setItem("matchId:" + vbStats[0].matchStart, JSON.stringify(vbStats));
 
   setHomeScore(0);
   setAwayScore(0);
@@ -522,9 +671,9 @@ document.getElementById('endMatch').addEventListener('click', () => {
     document.getElementById(statTypes[x]).innerHTML = getTeamStatSummary(statTypes[x]);
   }
 
-  var xAttackValues   = [ "Kill Shots", "Dug Up", "Blocked", "Hit Out" ];
-  var yAttackValues   = [ getTeamStatSummary('attackKill'), getTeamStatSummary('attackDug'), getTeamStatSummary('attackBlocked'), getTeamStatSummary('attackMiss') ];
-  var attackBarColors = [ "red", "green","blue","orange" ];
+  let xAttackValues   = [ "Kill Shots", "Dug Up", "Blocked", "Hit Out" ];
+  let yAttackValues   = [ getTeamStatSummary('attackKill'), getTeamStatSummary('attackDug'), getTeamStatSummary('attackBlocked'), getTeamStatSummary('attackMiss') ];
+  let attackBarColors = [ "red", "green","blue","orange" ];
 
   new Chart("attackChart", {
     type: "pie",
@@ -543,9 +692,9 @@ document.getElementById('endMatch').addEventListener('click', () => {
     }
   });
 
-  var xPassingValues   = [ '3-Pass', '2-Pass', '1-Pass', 'Shank' ];
-  var yPassingValues   = [ getTeamStatSummary('pass3'), getTeamStatSummary('pass2'), getTeamStatSummary('pass1'), getTeamStatSummary('shank') ];
-  var passingBarColors = [ "red", "green","blue","orange" ];
+  let xPassingValues   = [ '3-Pass', '2-Pass', '1-Pass', 'Shank' ];
+  let yPassingValues   = [ getTeamStatSummary('pass3'), getTeamStatSummary('pass2'), getTeamStatSummary('pass1'), getTeamStatSummary('shank') ];
+  let passingBarColors = [ "red", "green","blue","orange" ];
 
   new Chart("passingChart", {
     type: "pie",
@@ -564,9 +713,9 @@ document.getElementById('endMatch').addEventListener('click', () => {
     }
   });
 
-  var xServingValues   = [ 'Ace', 'Served In', 'Served Out', 'Line Violation' ];
-  var yServingValues   = [ getTeamStatSummary('serviceAce'), getTeamStatSummary('serviceIn'), getTeamStatSummary('serviceOut'), getTeamStatSummary('serviceLine') ];
-  var servingBarColors = [ "red", "green","blue","orange" ];
+  let xServingValues   = [ 'Ace', 'Served In', 'Served Out', 'Line Violation' ];
+  let yServingValues   = [ getTeamStatSummary('serviceAce'), getTeamStatSummary('serviceIn'), getTeamStatSummary('serviceOut'), getTeamStatSummary('serviceLine') ];
+  let servingBarColors = [ "red", "green","blue","orange" ];
 
   new Chart("servingChart", {
     type: "pie",
@@ -585,9 +734,9 @@ document.getElementById('endMatch').addEventListener('click', () => {
     }
   });
 
-  var xReceivingValues   = [ 'serveReceive3', 'serveReceive2', 'serveReceive1', 'serveReceiveShanked' ];
-  var yReceivingValues   = [ getTeamStatSummary('3-Pass'), getTeamStatSummary('2-Pass'), getTeamStatSummary('1-Pass'), getTeamStatSummary('Shank') ];
-  var receivingBarColors = [ "red", "green","blue","orange" ];
+  let xReceivingValues   = [ '3-Receive', '2-Receive', '1-Receive', 'Shank' ];
+  let yReceivingValues   = [ getTeamStatSummary('serveReceive3'), getTeamStatSummary('serveReceive2'), getTeamStatSummary('serveReceive1'), getTeamStatSummary('serveReceiveShanked') ];
+  let receivingBarColors = [ "red", "green","blue","orange" ];
 
   new Chart("receivingChart", {
     type: "pie",
@@ -611,56 +760,49 @@ document.getElementById('endMatch').addEventListener('click', () => {
   document.getElementById(        'statsSummaryTbl').hidden = false;
 });
 
-document.getElementById('exportMatchStats').addEventListener('click', () => { // text/csv
-  var filename = "match_stats.csv";
-  var dateNow  = new Date();
-  var vbAllStats = [];
-  var tmpStat = new Object();
-  tmpStat.matchStart = dateNow.toISOString();
-  tmpStat.homeTeam   = "Phoenix 16UG";
-  tmpStat.awayTeam   = "Taika";
-  tmpStat.setNumber  = 1;
-  tmpStat.playerName = "Gabby";
-  tmpStat.statType   = "Pass3";
-  tmpStat.homeScore  = 0;
-  tmpStat.awayScore  = 0;
-  vbAllStats.push(tmpStat);
-
-  tmpStat = new Object();
-  tmpStat.matchStart = dateNow.toISOString();
-  tmpStat.homeTeam   = "Phoenix 16UG";
-  tmpStat.awayTeam   = "Taika";
-  tmpStat.setNumber  = 1;
-  tmpStat.playerName = "Piper";
-  tmpStat.statType   = "attackKill";
-  tmpStat.homeScore  = 0;
-  tmpStat.awayScore  = 0;
-  vbAllStats.push(tmpStat);
-
-  tmpStat = new Object();
-  tmpStat.matchStart = dateNow.toISOString();
-  tmpStat.homeTeam   = "Phoenix 16UG";
-  tmpStat.awayTeam   = "Taika";
-  tmpStat.setNumber  = 2;
-  tmpStat.playerName = "Laurel";
-  tmpStat.statType   = "attackDug";
-  tmpStat.homeScore  = 0;
-  tmpStat.awayScore  = 0;
-  vbAllStats.push(tmpStat);
-
-  var csvString = "Match Start Date,Home Team,Away Team,Set,Player Name,Home Score,Away Score,Stat Type\n";
-  for (var n = 0; n < vbAllStats.length; n++) {
-    csvString += vbAllStats[n].matchStart + "," + vbAllStats[n].homeTeam + "," + vbAllStats[n].awayTeam + "," + vbAllStats[n].setNumber + "," + vbAllStats[n].playerName + "," + vbAllStats[n].homeScore + "," + vbAllStats[n].awayScore  + "," + vbAllStats[n].statType + "\n";
+document.getElementById('exportToCSV').addEventListener('click', () => {
+  let filename = "matchId_" + vbStats[0].matchStart + ".csv";
+  let csvString = "Match Start Date,Home Team,Away Team,Set,Serving Team,Home Timeouts,Away Timeouts,Home Subs,Away Subs,Home Score,Away Score,Stat Timestamp,Stat Type,Stat Player\n";
+  for (let n = 0; n < vbStats.length; n++) {
+    csvString += vbStats[n].matchStart + "," + vbStats[n].homeTeam + "," + vbStats[n].awayTeam + "," + vbStats[n].setNumber + "," + vbStats[n].servingTeam + "," + vbStats[n].homeTimeouts + "," + vbStats[n].awayTimeouts + "," + vbStats[n].homeSubs + "," + vbStats[n].awaySubs + "," + vbStats[n].homeScore + "," + vbStats[n].awayScore + "," + vbStats[n].statTimestamp + "," + vbStats[n].statType + "," + vbStats[n].statPlayer + "\n";
   }
-  
-  var blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+
+  let blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
   if (navigator.msSaveBlob) { // IE 10+
     navigator.msSaveBlob(blob, filename);
   } else {
-    var link = document.createElement("a");
+    let link = document.createElement("a");
     if (link.download !== undefined) { // feature detection
       // Browsers that support HTML5 download attribute
-      var url = URL.createObjectURL(blob);
+      let url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
+});
+
+document.getElementById('exportMatchStats').addEventListener('click', () => {
+  let filename = "allMatches_" + (new Date()).toISOString() + ".csv";
+  let csvString = "Match Start Date,Home Team,Away Team,Set,Serving Team,Home Timeouts,Away Timeouts,Home Subs,Away Subs,Home Score,Away Score,Stat Timestamp,Stat Type,Stat Player\n";
+
+  for (let w = 0; w < localStorage.length; w++) {
+    vbStats = JSON.parse(localStorage.getItem(localStorage.key(w)));
+    for (let n = 0; n < vbStats.length; n++) {
+      csvString += vbStats[n].matchStart + "," + vbStats[n].homeTeam + "," + vbStats[n].awayTeam + "," + vbStats[n].setNumber + "," + vbStats[n].servingTeam + "," + vbStats[n].homeTimeouts + "," + vbStats[n].awayTimeouts + "," + vbStats[n].homeSubs + "," + vbStats[n].awaySubs + "," + vbStats[n].homeScore + "," + vbStats[n].awayScore + "," + vbStats[n].statTimestamp + "," + vbStats[n].statType + "," + vbStats[n].statPlayer + "\n";
+    }
+  }
+  let blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+  if (navigator.msSaveBlob) { // IE 10+
+    navigator.msSaveBlob(blob, filename);
+  } else {
+    let link = document.createElement("a");
+    if (link.download !== undefined) { // feature detection
+      // Browsers that support HTML5 download attribute
+      let url = URL.createObjectURL(blob);
       link.setAttribute("href", url);
       link.setAttribute("download", filename);
       link.style.visibility = 'hidden';
