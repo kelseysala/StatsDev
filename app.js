@@ -11,12 +11,35 @@ DONE:
 - View of current rotation positions by player
 - Summary of team statistics at the end of a match
 - Ability to undo
+- Make "Serving Team" and "Lineup" mandatory (only Libero optional input)
 
 TODO:
+- Add "Confirm Lineup" button
+- Add "Add Player to Roster" feature
+- Add "Back" button to Add Sub page
 - Summarize individual match stats
 - Summarize individual and team stats across matches
 - Implement a shared back-end so you can synchronize saved matches back to a central server so data isn't siloed on a single device
-- Add a player to a roster in the event someone gets called up from lower age team
+- Add Content-Security-Policy - https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid
+- Add in Sign up/in with Google button [Client ID: 487376527490-4mleqjfmj1qcbu0pi43isc9e5jnl69o7.apps.googleusercontent.com from https://console.developers.google.com/auth/clients]
+- Verify OAuth token server-side: https://developers.google.com/identity/gsi/web/guides/verify-google-id-token
+<script src="https://accounts.google.com/gsi/client" async></script>
+<div id="g_id_onload"
+     data-client_id="487376527490-4mleqjfmj1qcbu0pi43isc9e5jnl69o7.apps.googleusercontent.com"
+     data-context="signup"
+     data-ux_mode="redirect"
+     data-login_uri="https://wmvl.com/index.pl?class=Login&method=View"
+     data-auto_prompt="false">
+</div>
+
+<div class="g_id_signin"
+     data-type="standard"
+     data-shape="pill"
+     data-theme="outline"
+     data-text="signin_with"
+     data-size="large"
+     data-logo_alignment="left">
+</div>
 */
 
 let vbMatch;
@@ -305,15 +328,46 @@ function viewStats(k) {
   document.getElementById('viewMatchDetailsTbl').hidden = false;
 }
 
-document.getElementById('dismissMatchDetails').addEventListener('click', () => {
-  document.getElementById('viewMatchDetailsTbl').hidden = true;
-  document.getElementById(          'matchList').hidden = false;
-});
 
 function dismissBrowseMatches() {
   document.getElementById('matchList').hidden = true;
   document.getElementById('mainMenu').hidden = false;
 }
+
+function isStartingLineupInvalid() {
+  let lineUp = [];
+  lineUp.push(document.getElementById('posName1').value);
+  lineUp.push(document.getElementById('posName2').value);
+  lineUp.push(document.getElementById('posName3').value);
+  lineUp.push(document.getElementById('posName4').value);
+  lineUp.push(document.getElementById('posName5').value);
+  lineUp.push(document.getElementById('posName6').value);
+  lineUp.push(document.getElementById( 'libName').value);
+  for (let x = 0; x < lineUp.length; x++) {
+    for (let y = 0; y < lineUp.length; y++) {
+      if (x != y) {
+        if (lineUp[x] === lineUp[y]) {
+          return true;
+        }
+      }
+    }
+  }
+
+  if (document.getElementById('firstServe').value === "Blank") { return true; }
+  if (document.getElementById(  'posName1').value === "Blank") { return true; }
+  if (document.getElementById(  'posName2').value === "Blank") { return true; }
+  if (document.getElementById(  'posName3').value === "Blank") { return true; }
+  if (document.getElementById(  'posName4').value === "Blank") { return true; }
+  if (document.getElementById(  'posName5').value === "Blank") { return true; }
+  if (document.getElementById(  'posName6').value === "Blank") { return true; }
+  
+  return false;
+}
+
+document.getElementById('dismissMatchDetails').addEventListener('click', () => {
+  document.getElementById('viewMatchDetailsTbl').hidden = true;
+  document.getElementById(          'matchList').hidden = false;
+});
 
 document.getElementById('undoLastAction').addEventListener('click', () => {
   let lastStat = vbStats.pop();
@@ -556,26 +610,32 @@ document.getElementById('goToSetOpTeam').addEventListener('click', () => {
 });
 
 document.getElementById('setStartingLineup').addEventListener('click', () => {
-  setCurrentServer(document.getElementById('firstServe').value);
+  if (isStartingLineupInvalid()) {
+    // Validation Failed
+    alert("One or more mandatory fields is missing or you have the same player in two positions.");
+  } else {
+    // Validation Succeeded
+    setCurrentServer(document.getElementById('firstServe').value);
 
-  document.getElementById('position1Name').innerHTML = document.getElementById('posName1').value;
-  document.getElementById('position2Name').innerHTML = document.getElementById('posName2').value;
-  document.getElementById('position3Name').innerHTML = document.getElementById('posName3').value;
-  document.getElementById('position4Name').innerHTML = document.getElementById('posName4').value;
-  document.getElementById('position5Name').innerHTML = document.getElementById('posName5').value;
-  document.getElementById('position6Name').innerHTML = document.getElementById('posName6').value;
+    document.getElementById('position1Name').innerHTML = document.getElementById('posName1').value;
+    document.getElementById('position2Name').innerHTML = document.getElementById('posName2').value;
+    document.getElementById('position3Name').innerHTML = document.getElementById('posName3').value;
+    document.getElementById('position4Name').innerHTML = document.getElementById('posName4').value;
+    document.getElementById('position5Name').innerHTML = document.getElementById('posName5').value;
+    document.getElementById('position6Name').innerHTML = document.getElementById('posName6').value;
 
-  if (vbSetCount == 1) {
-    matchStarted = (new Date()).toISOString();
-    homeTeam = document.getElementById("homeRoster").value;
-    awayTeam = document.getElementById("awayTeamName").value;
-    vbStats.push(getStateForStat("matchStarted", ""));
+    if (vbSetCount == 1) {
+      matchStarted = (new Date()).toISOString();
+      homeTeam = document.getElementById("homeRoster").value;
+      awayTeam = document.getElementById("awayTeamName").value;
+      vbStats.push(getStateForStat("matchStarted", ""));
+    }
+    vbStats.push(getStateForStat("setStarted", ""));
+
+    document.getElementById('updateStartingLineupTbl').hidden = true;
+    document.getElementById(           'manageSetTbl').hidden = false;
+    document.getElementById(           'rotationsTbl').hidden = false;
   }
-  vbStats.push(getStateForStat("setStarted", ""));
-
-  document.getElementById('updateStartingLineupTbl').hidden = true;
-  document.getElementById(           'manageSetTbl').hidden = false;
-  document.getElementById(           'rotationsTbl').hidden = false;
 });
 
 document.getElementById('addPointFor').addEventListener('click', () => {
