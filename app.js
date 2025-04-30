@@ -567,7 +567,7 @@ document.getElementById('browseMatches').addEventListener('click', () => {
 });
 
 document.getElementById('checkForUpdates').addEventListener('click', () => {
-  caches.delete('content-cache');
+  //caches.delete('content-cache');
   window.location.reload(true);
   return false;
 });
